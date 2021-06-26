@@ -8,20 +8,14 @@ class Form extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      url: "",
+      RESTurl: "",
       Method: "",
+      History: [],
       Body: {},
       results: [],
       flag: false,
     };
   }
-
-  handleMethod = (event) => {
-    event.preventDefault();
-    let valueMethod = event.target.value;
-    const UserInput = { ...this.state, Method: valueMethod };
-    this.setState(UserInput);
-  };
 
   handelSubmit = async (e) => {
     e.preventDefault();
@@ -30,51 +24,68 @@ class Form extends React.Component {
 
       let FromUser =
         this.state.Method === "POST" || this.state.Method === "PUT"
-          ? await fetch(this.state.url, {
-              method: this.state.Method,
+          ? await fetch(this.state.RESTurl || this.props.url, {
+              method: this.state.Method || this.props.method,
               mode: "cors",
               headers: {
                 "Content-Type": "application/json",
               },
               body: body,
             })
-          : await fetch(this.state.url);
+          : await fetch(this.state.RESTurl || this.props.url);
 
       let data = await FromUser.json();
-
-      this.setState({ results: data, Body: body, flag: !this.state.flag});
-      let results = FromUser.results;
-      let count = FromUser.count;
-
+      let results = data.results;
+      let count = data.count;
+      
+      
       if (data) {
-        const { Method, url } = this.state;
+        this.setState({ results: data, Body: body, flag: !this.state.flag });
+        const { Method, RESTurl } = this.state;
+
         if (localStorage.getItem("recentInput")) {
           let newData = JSON.parse(localStorage.getItem("recentInput"));
 
           let found = newData.find((obj) => {
-            return obj.Method === Method && obj.url === url;
+            return obj.Method === Method && obj.RESTurl === RESTurl;
           });
 
           if (!found) {
-            newData.push({ Method, url });
+            newData.push({ Method, RESTurl, data});
             localStorage.setItem("recentInput", JSON.stringify(newData));
           }
         } else {
           localStorage.setItem(
             "recentInput",
-            JSON.stringify([{ Method, url }])
+            JSON.stringify([{ Method, RESTurl, data }])
           );
         }
       }
+      // this.setState({ History: JSON.parse(localStorage.getItem("recentInput")) });
 
-      this.props.handler(results, count, data, FromUser);
+      let inLocal = localStorage.getItem("recentInput")
+
+      this.props.handler(results, count, data, FromUser, inLocal);
     }, 2000);
   };
 
-  handleURL = (event) => {
-    let valueURL = event.target.value;
-    const UserInput = { ...this.state, url: valueURL };
+  handleMethod = (e) => {
+    e.preventDefault();
+    let valueMethod = e.target.innerHTML;
+    const UserInput = { ...this.state, Method: valueMethod };
     this.setState(UserInput);
+  };
+
+  handleURL = (e) => {
+    e.preventDefault();
+    let valueURL = e.target.value;
+    const UserInput = { ...this.state, RESTurl: valueURL };
+    this.setState(UserInput);
+  };
+
+  handleReRequest = () => {
+    if (this.props.requestHappend)
+      this.setState({ Method: this.props.method, RESTurl: this.props.url });
   };
 
   toggle = () => {
@@ -85,32 +96,48 @@ class Form extends React.Component {
     return (
       <React.Fragment>
         <form className="from" onSubmit={this.handelSubmit}>
-          <input type="text" onChange={this.handleURL} placeholder="Enter URL HERE" />
+          <input
+            type="text"
+            onChange={this.handleURL}
+            placeholder="Enter URL"
+          />
 
-          <textarea name="body" placeholder="Body Data must be an object"/>
+          <textarea name="body" placeholder="Body Data must be an object" />
 
-          <button onClick={this.toggle}> GO !! </button>
+          <button onClick={this.toggle} className="go"> GO !! </button>
           <IF condition={this.state.flag}>
             <Loader></Loader>
           </IF>
 
           <div className="buttons">
-            <button onClick={this.handleMethod} className="get" value="GET">
+            <button
+              onClick={this.handleMethod}
+              className="get"
+              value={this.props.method}
+            >
               GET
             </button>
 
-            <button onClick={this.handleMethod} className="post" value="POST">
+            <button
+              onClick={this.handleMethod}
+              className="post"
+              value={this.props.method}
+            >
               POST
             </button>
 
-            <button onClick={this.handleMethod} className="put" value="PUT">
+            <button
+              onClick={this.handleMethod}
+              className="put"
+              value={this.props.method}
+            >
               PUT
             </button>
 
             <button
               onClick={this.handleMethod}
               className="delete"
-              value="DELETE"
+              value={this.props.method}
             >
               DELETE
             </button>
@@ -118,8 +145,9 @@ class Form extends React.Component {
         </form>
 
         <div className="result">
-          <p> URL: {this.state.url} </p>
-          <p> METHOD: {this.state.Method} </p>
+          <h3>Current Search </h3>
+          <p> URL: {this.state.RESTurl || this.props.url} </p>
+          <p> Method: {this.state.Method || this.props.method} </p>
         </div>
       </React.Fragment>
     );

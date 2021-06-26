@@ -1,33 +1,42 @@
 import React from "react";
 import JSONPretty from "react-json-pretty";
-import IF from './IF'
 
 
 class History extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      flag: false,
-      localData: {},
-    };
+  
+  getDate(history) {
+    if (!history) {
+      return null;
+    }
+    return history.map((element, ind) => {
+      return (
+        <div  className="his" key={ind}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              this.props.refill(element.Method, element.RESTurl);
+            }}
+          >
+            {" "}
+            Request Again !
+          </button>
+          <p> METHOD: {element.Method}</p>
+          <p> URL: {element.RESTurl}</p>
+         <JSONPretty className='data' data={element.data}></JSONPretty>
+
+        </div>
+      );
+    });
   }
-
-  getDate = () => {
-    let data = JSON.parse(localStorage.getItem("recentInput"));
-    this.setState({ localData: data , flag: !this.state.flag});
-  };
-
 
   render() {
     return (
       <>
-      <button onClick={this.getDate}>Show History</button>
-      <IF condition={this.state.flag}>
-        <JSONPretty data={this.state.localData}></JSONPretty>
-        </IF>
+        <div>{this.getDate(this.props.hist)}</div>
       </>
     );
   }
 }
+
 
 export default History;
