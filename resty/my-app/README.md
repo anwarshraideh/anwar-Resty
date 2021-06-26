@@ -1,8 +1,10 @@
 # Getting Started with Create React App
 
 
+# uml diagram
+![uml](../../react3.png)
 
-
+![uml2](../../lab29x.png)
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
