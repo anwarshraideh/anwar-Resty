@@ -1,7 +1,6 @@
 # Getting Started with Create React App
 
-# uml diagram
-![uml](,./../../react3.png)
+
 
 
 

@@ -3,13 +3,18 @@ import ReactDOM from 'react-dom';
 import "./index.scss";
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { BrowserRouter } from "react-router-dom";
+import Header from "./Header";
+import Footer from "./Footer";
 
 class Main extends React.Component {
   render() {
     return (
-      <React.StrictMode>
+      <BrowserRouter>
+        <Header />
         <App />
-      </React.StrictMode>
+        <Footer />
+      </BrowserRouter>
     );
   }
 }
